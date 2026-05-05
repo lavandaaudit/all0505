@@ -399,7 +399,7 @@
                 if (artworks.length < 30) allLoaded = true;
 
                 if (!append) {
-                    currentData = artworks;
+                    currentData = artworks.sort(() => Math.random() - 0.5);
                     renderArt(currentData);
                 } else {
                     currentData = [...currentData, ...artworks];
