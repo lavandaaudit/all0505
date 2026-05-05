@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARSLIB UNIVERSALIS | Велика Художня Бібліотека</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #08080a;
+            --panel-bg: #121214;
+            --accent-gold: #d4af37;
+            --accent-gold-glow: rgba(212, 175, 55, 0.4);
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a5;
+            --glass: rgba(18, 18, 20, 0.9);
+            --border-color: rgba(212, 175, 55, 0.25);
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.8);
+            --transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1e 0%, #08080a 100%);
+        }
+
+        h1, h2, h3, .logo { font-family: 'Playfair Display', serif; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-gold); border-radius: 10px; }
+
+        .overlay-texture {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1; pointer-events: none; z-index: 1000;
+        }
+
+        /* Header */
+        .main-header {
+            padding: 1rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(8,8,10,1), rgba(8,8,10,0.98));
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-header.scrolled {
+            padding: 0.5rem 5%;
+            background: rgba(8, 8, 10, 0.95);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .main-header.scrolled .header-top { margin-bottom: 0.5rem; }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+
+        .main-header.scrolled .logo { transform: scale(0.85); transform-origin: left; }
+
+        .logo .gold { color: var(--accent-gold); text-shadow: 0 0 20px var(--accent-gold-glow); }
+        .logo .sub { font-size: 0.6rem; opacity: 0.5; font-family: 'Inter'; letter-spacing: 1px; text-transform: uppercase; }
+
+        .search-area input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            width: 250px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .main-header.scrolled .search-area input { width: 220px; }
+
+        .search-area input:focus {
+            width: 350px;
+            border-color: var(--accent-gold);
+        }
+
+        .nav-label {
+            font-size: 0.6rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0.8rem 0 0.4rem;
+            font-weight: 700;
+            opacity: 0.6;
+            transition: var(--transition);
+        }
+
+        .main-header.scrolled .nav-label { margin: 0.3rem 0 0.2rem; font-size: 0.5rem; }
+
+        /* Epoch Navigation */
+        .epoch-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding-bottom: 0.3rem;
+            transition: var(--transition);
+        }
+
+        .epoch-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .epoch-btn:hover, .epoch-btn.active {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+            box-shadow: 0 5px 15px var(--accent-gold-glow);
+        }
+
+        /* Hero */
+        .hero-banner {
+            padding: 6rem 10% 4rem;
+            text-align: center;
+        }
+
+        .hero-banner h1 { font-size: 4.5rem; margin-bottom: 1.5rem; letter-spacing: -1px; }
+        .hero-banner p { color: var(--text-secondary); font-size: 1.3rem; max-width: 800px; margin: 0 auto 3rem; font-weight: 300; }
+
+        .btn-random {
+            padding: 1.2rem 2.5rem;
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-random:hover { transform: scale(1.05); box-shadow: 0 0 40px var(--accent-gold-glow); background: #fff; }
+
+        /* Gallery */
+        .gallery-container { padding: 0 5% 5rem; }
+        .art-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 3rem;
+        }
+
+        .art-card {
+            background: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .art-card:hover { transform: translateY(-15px); border-color: var(--border-color); box-shadow: var(--shadow-lg); }
+        .img-container { height: 400px; overflow: hidden; background: #000; }
+        .art-card img { width: 100%; height: 100%; object-fit: cover; transition: 1.5s ease; }
+        .art-card:hover img { transform: scale(1.1); }
+        .card-info { padding: 2rem; }
+        .card-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .card-artist { color: var(--accent-gold); font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            opacity: 0; transition: 0.5s;
+        }
+
+        .modal.active { display: block; opacity: 1; }
+        .modal-container {
+            width: 95%; height: 90%; max-width: 1500px;
+            margin: 2.5% auto;
+            background: var(--panel-bg);
+            display: grid; grid-template-columns: 1.2fr 0.8fr;
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-view { background: #000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .modal-view img { max-width: 100%; max-height: 80vh; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .modal-content { padding: 4rem; overflow-y: auto; border-left: 1px solid rgba(212, 175, 55, 0.1); }
+        .close-btn { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: var(--accent-gold); transform: rotate(90deg); }
+
+        .m-title { font-size: 3rem; margin-bottom: 1rem; line-height: 1.1; }
+        .m-artist { color: var(--accent-gold); font-size: 1.4rem; margin-bottom: 2rem; font-style: italic; }
+        .m-meta { display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; }
+        .tag { padding: 0.5rem 1.2rem; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--border-color); border-radius: 20px; color: var(--accent-gold); font-size: 0.85rem; }
+        .m-summary { font-size: 1.1rem; line-height: 1.8; color: var(--text-secondary); }
+
+        /* Loader */
+        .loader { grid-column: 1 / -1; text-align: center; padding: 5rem 0; }
+        .spinner { width: 50px; height: 50px; border: 3px solid rgba(212, 175, 55, 0.1); border-top: 3px solid var(--accent-gold); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 1.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        footer { padding: 4rem; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-secondary); font-size: 0.9rem; }
+
+        @media (max-width: 1100px) {
+            .modal-container { grid-template-columns: 1fr; height: 95%; overflow-y: auto; }
+            .modal-content { padding: 2rem; border-left: none; }
+            .hero-banner h1 { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay-texture"></div>
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-top">
+                <div class="logo" onclick="location.reload()">
+                    <span class="gold">ARSLIB</span>
+                    <span class="sub">Universalis</span>
+                </div>
+                <div class="search-area">
+                    <input type="text" id="searchInput" placeholder="Шукати автора, епоху або назву...">
+                </div>
+            </div>
+            <div class="nav-label">Епохи та Напрямки:</div>
+            <nav class="epoch-nav" id="epochNav">
+                <button class="epoch-btn active" data-query="art">Всі епохи</button>
+                <button class="epoch-btn" data-query="ancient art">Античність</button>
+                <button class="epoch-btn" data-query="renaissance art">Відродження</button>
+                <button class="epoch-btn" data-query="impressionism">Імпресіонізм</button>
+                <button class="epoch-btn" data-query="modern art">Модернізм</button>
+                <button class="epoch-btn" data-query="contemporary art">Сучасність</button>
+                <button class="epoch-btn" data-query="japanese art">Японія</button>
+            </nav>
+            <div class="nav-label">Хронологія за Століттями (I - XXI ст.):</div>
+            <nav class="epoch-nav" id="centuryNav">
+                <!-- Centuries injected by JS -->
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero-banner">
+        <h1>Скарбниця Світового Мистецтва</h1>
+        <p>Досліджуйте історію людства через призму мистецтва кожного століття. Від античних витоків до цифрового сьогодення.</p>
+        <button class="btn-random" onclick="openRandom()">Випадковий шедевр</button>
+    </section>
+
+    <main class="gallery-container">
+        <div id="artGrid" class="art-grid"></div>
+        <div id="scrollAnchor" style="height: 100px;"></div>
+        <div id="bottomLoader" class="loader" style="display: none;">
+            <div class="spinner"></div>
+            <p>Завантаження нових творів...</p>
+        </div>
+    </main>
+
+    <div id="artModal" class="modal">
+        <span class="close-btn">&times;</span>
+        <div class="modal-container">
+            <div class="modal-view">
+                <img id="mImg" src="" alt="">
+            </div>
+            <div class="modal-content">
+                <div class="m-meta" id="mMeta"></div>
+                <h2 class="m-title" id="mTitle"></h2>
+                <h3 class="m-artist" id="mArtist"></h3>
+                <div class="m-summary" id="mSummary"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 ARSLIB Universalis. Цифрова архівація світової спадщини.</p>
+    </footer>
+
+    <script>
+        const API_URL = "https://openaccess-api.clevelandart.org/api/artworks/";
+        const artGrid = document.getElementById('artGrid');
+        const searchInput = document.getElementById('searchInput');
+        const centuryNav = document.getElementById('centuryNav');
+        const modal = document.getElementById('artModal');
+        const closeBtn = document.querySelector('.close-btn');
+
+        let currentData = [];
+        let currentQuery = "art";
+        let currentRange = { start: null, end: null };
+        let skip = 0;
+        let isLoading = false;
+        let allLoaded = false;
+
+        // Century Buttons Generation
+        const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI"];
+        roman.forEach((r, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'epoch-btn';
+            btn.textContent = `${r} ст.`;
+            const start = i * 100;
+            const end = (i + 1) * 100 - 1;
+            btn.onclick = () => {
+                // Clear active century buttons
+                centuryNav.querySelectorAll('.epoch-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRange = { start, end };
+                fetchArt(currentQuery, false);
+            };
+            centuryNav.appendChild(btn);
+        });
+
+        const TECHNIQUE_MAP = {
+            "oil on canvas": "Олія на полотні", "oil on wood": "Олія на дереві",
+            "watercolor": "Акварель", "engraving": "Гравюра", "etching": "Офорт",
+            "marble": "Мармур", "bronze": "Бронза", "sculpture": "Скульптура"
+        };
+
+        function translate(text) {
+            if (!text) return "";
+            const lower = text.toLowerCase();
+            for (const [en, ua] of Object.entries(TECHNIQUE_MAP)) {
+                if (lower.includes(en)) return ua;
+            }
+            return text;
+        }
+
+        async function gTranslate(text) {
+            if (!text || text.length < 3) return text;
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=uk&dt=t&q=${encodeURIComponent(text)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return data[0].map(item => item[0]).join('');
+            } catch (e) { return text; }
+        }
+
+        async function fetchArt(query = "art", append = false) {
+            if (isLoading || (allLoaded && append)) return;
+            isLoading = true;
+            currentQuery = query;
+
+            if (!append) {
+                skip = 0; allLoaded = false;
+                artGrid.innerHTML = '<div class="loader"><div class="spinner"></div><p>Відкриваємо архіви...</p></div>';
+            } else {
+                document.getElementById('bottomLoader').style.display = 'block';
+            }
+
+            try {
+                let url = `${API_URL}?q=${encodeURIComponent(currentQuery)}&has_image=1&limit=30&skip=${skip}`;
+                if (currentRange.start !== null) {
+                    url += `&created_after=${currentRange.start}&created_before=${currentRange.end}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                const artworks = data.data || [];
+                if (artworks.length < 30) allLoaded = true;
+
+                if (!append) {
+                    currentData = artworks;
+                    renderArt(currentData);
+                } else {
+                    currentData = [...currentData, ...artworks];
+                    renderArt(artworks, true);
+                }
+                skip += 30;
+            } catch (e) {
+                if (!append) artGrid.innerHTML = '<p class="loader">Помилка зв\'язку з базою.</p>';
+            } finally {
+                isLoading = false;
+                document.getElementById('bottomLoader').style.display = 'none';
+            }
+        }
+
+        function renderArt(artworks, append = false) {
+            if (!append) artGrid.innerHTML = '';
+            if (artworks.length === 0 && !append) {
+                artGrid.innerHTML = '<p class="loader">Творів у цьому періоді не знайдено.</p>';
+                return;
+            }
+            artworks.forEach(work => {
+                if (!work.images?.web?.url) return;
+                const card = document.createElement('div');
+                card.className = 'art-card';
+                card.innerHTML = `
+                    <div class="img-container"><img src="${work.images.web.url}" loading="lazy"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">${work.title}</h3>
+                        <p class="card-artist">${work.creators[0]?.description || 'Невідомий автор'}</p>
+                    </div>
+                `;
+                card.onclick = () => showDetails(work);
+                artGrid.appendChild(card);
+            });
+        }
+
+        async function showDetails(work) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('mImg').src = work.images.web.url;
+            const summaryBox = document.getElementById('mSummary');
+            summaryBox.innerHTML = '<p>Переклад опису...</p>';
+
+            const [tTitle, tArtist, tDate, tTech] = await Promise.all([
+                gTranslate(work.title),
+                gTranslate(work.creators[0]?.description || 'Майстер'),
+                gTranslate(work.creation_date || 'Невідома дата'),
+                gTranslate(translate(work.technique))
+            ]);
+
+            document.getElementById('mTitle').textContent = tTitle;
+            document.getElementById('mArtist').textContent = tArtist;
+            document.getElementById('mMeta').innerHTML = `<span class="tag">${tDate}</span><span class="tag">${tTech}</span>`;
+
+            let desc = "";
+            if (work.wall_description || work.description) {
+                desc = await gTranslate((work.wall_description || "") + " " + (work.description || ""));
+            }
+
+            if (work.creators?.[0]?.full_name) {
+                const name = work.creators[0].full_name;
+                const wikiRes = await fetch(`https://uk.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=8&explaintext=1&titles=${encodeURIComponent(name)}&format=json&origin=*`);
+                const wikiData = await wikiRes.json();
+                const pageId = Object.keys(wikiData.query.pages)[0];
+                if (pageId !== "-1") {
+                    desc += `<div style="margin-top:2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1)"><h4>Вікіпедія:</h4><p>${wikiData.query.pages[pageId].extract}</p></div>`;
+                } else {
+                    const enWikiRes = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exsentences=8&explaintext=1&titles=${encodeURIComponent(name)}&format=json&origin=*`);
+                    const enData = await enWikiRes.json();
+                    const enId = Object.keys(enData.query.pages)[0];
+                    if (enId !== "-1") {
+                        const enTrans = await gTranslate(enData.query.pages[enId].extract);
+                        desc += `<div style="margin-top:2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1)"><h4>Історична довідка:</h4><p>${enTrans}</p></div>`;
+                    }
+                }
+            }
+
+            summaryBox.innerHTML = desc || '<p>Детального опису не знайдено.</p>';
+        }
+
+        function openRandom() {
+            if (currentData.length > 0) showDetails(currentData[Math.floor(Math.random() * currentData.length)]);
+        }
+
+        // Epoch Nav logic
+        document.querySelectorAll('#epochNav .epoch-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('#epochNav .epoch-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // If "All Eras" is selected, reset range
+                if (btn.dataset.query === "art") {
+                    currentRange = { start: null, end: null };
+                    document.querySelectorAll('#centuryNav .epoch-btn').forEach(b => b.classList.remove('active'));
+                }
+                
+                currentQuery = btn.dataset.query;
+                fetchArt(currentQuery, false);
+            };
+        });
+
+        // Search logic
+        let searchTimer;
+        searchInput.oninput = (e) => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentRange = { start: null, end: null }; // Reset range on manual search
+                document.querySelectorAll('.epoch-btn').forEach(b => b.classList.remove('active'));
+                fetchArt(e.target.value || "art", false);
+            }, 600);
+        };
+
+        // Scroll Effect for Header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.main-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Infinite Scroll
+        const observer = new IntersectionObserver(e => e[0].isIntersecting && fetchArt(currentQuery, true));
+        observer.observe(document.getElementById('scrollAnchor'));
+
+        closeBtn.onclick = () => { modal.classList.remove('active'); document.body.style.overflow = 'auto'; };
+        window.onclick = e => e.target === modal && closeBtn.onclick();
+
+        fetchArt();
+    </script>
+</body>
+</html>
