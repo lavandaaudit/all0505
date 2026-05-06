@@ -226,10 +226,61 @@
             border: 1px solid var(--border-color);
         }
 
-        .modal-view { background: #000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-        .modal-view img { max-width: 100%; max-height: 80vh; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        .modal-content { padding: 4rem; overflow-y: auto; border-left: 1px solid rgba(212, 175, 55, 0.1); }
-        .close-btn { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: pointer; transition: 0.3s; }
+        .modal-view { 
+            background: #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem; 
+            position: relative; 
+            overflow: hidden;
+            cursor: zoom-in;
+        }
+        .modal-view img { 
+            max-width: 100%; 
+            max-height: 80vh; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
+            transition: transform 0.3s ease;
+        }
+        
+        .magnifier-lens {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.5);
+            background-repeat: no-repeat;
+            background-color: #000;
+            transition: opacity 0.2s ease;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            border: 1px solid var(--border-color);
+            pointer-events: none;
+            z-index: 50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeInOut 3s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .close-btn { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: pointer; transition: 0.3s; z-index: 2100; }
         .close-btn:hover { color: var(--accent-gold); transform: rotate(90deg); }
 
         .m-title { font-size: 3rem; margin-bottom: 1rem; line-height: 1.1; }
@@ -301,8 +352,10 @@
     <div id="artModal" class="modal">
         <span class="close-btn">&times;</span>
         <div class="modal-container">
-            <div class="modal-view">
+            <div class="modal-view" id="modalView">
                 <img id="mImg" src="" alt="">
+                <div id="magnifier" class="magnifier-lens"></div>
+                <div class="zoom-hint">Наведіть для детального огляду</div>
             </div>
             <div class="modal-content">
                 <div class="m-meta" id="mMeta"></div>
@@ -314,7 +367,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 ARSLIB Universalis. Цифрова архівація світової спадщини.</p>
+        <p>&copy; 2026 SUNSET.LIB UNIVERSALIS lavandaaudit.2026. Цифрова архівація світової спадщини.</p>
     </footer>
 
     <script>
@@ -478,6 +531,75 @@
             }
 
             summaryBox.innerHTML = desc || '<p>Детального опису не знайдено.</p>';
+            
+            initMagnifier();
+        }
+
+        function initMagnifier() {
+            const img = document.getElementById('mImg');
+            const glass = document.getElementById('magnifier');
+            const modalView = document.getElementById('modalView');
+            const zoom = 2.5;
+
+            const setup = () => {
+                glass.style.backgroundImage = `url('${img.src}')`;
+                glass.style.backgroundSize = `${img.width * zoom}px ${img.height * zoom}px`;
+            };
+
+            if (img.complete) setup(); else img.onload = setup;
+
+            const moveMagnifier = (e) => {
+                const pos = getCursorPos(e);
+                let x = pos.x;
+                let y = pos.y;
+
+                // Adjust for lens size
+                const w = glass.offsetWidth / 2;
+                const h = glass.offsetHeight / 2;
+
+                // Set lens position
+                glass.style.left = (x - w) + "px";
+                glass.style.top = (y - h) + "px";
+
+                // Set lens background position
+                // Calculate the ratio between the image display size and the natural size
+                const ratioX = (img.width * zoom) / img.width;
+                const ratioY = (img.height * zoom) / img.height;
+
+                // Find image offset within modalView
+                const imgRect = img.getBoundingClientRect();
+                const viewRect = modalView.getBoundingClientRect();
+                
+                const imgLeft = imgRect.left - viewRect.left;
+                const imgTop = imgRect.top - viewRect.top;
+
+                // Relative position within image
+                let relX = x - imgLeft;
+                let relY = y - imgTop;
+
+                // Only show if inside image boundaries
+                if (relX >= 0 && relX <= img.width && relY >= 0 && relY <= img.height) {
+                    glass.style.display = "block";
+                    glass.style.opacity = "1";
+                    glass.style.backgroundPosition = `-${(relX * zoom) - w}px -${(relY * zoom) - h}px`;
+                    modalView.style.cursor = "none";
+                } else {
+                    glass.style.opacity = "0";
+                    setTimeout(() => { if(glass.style.opacity === "0") glass.style.display = "none"; }, 200);
+                    modalView.style.cursor = "zoom-in";
+                }
+            };
+
+            function getCursorPos(e) {
+                const rect = modalView.getBoundingClientRect();
+                const x = (e.pageX || e.touches?.[0]?.pageX) - rect.left - window.pageXOffset;
+                const y = (e.pageY || e.touches?.[0]?.pageY) - rect.top - window.pageYOffset;
+                return { x, y };
+            }
+
+            modalView.addEventListener("mousemove", moveMagnifier);
+            modalView.addEventListener("touchmove", moveMagnifier);
+            modalView.addEventListener("mouseleave", () => glass.style.display = "none");
         }
 
         function openRandom() {
